@@ -1,6 +1,7 @@
 Thank you for considering contributing to this project.
 
 Guidelines:
+
 - Open an issue for discussion before substantial changes.
 - Fork the repo and make changes on a feature branch.
 - Keep commits small and focused; write descriptive messages.

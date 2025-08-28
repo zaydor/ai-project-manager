@@ -13,7 +13,7 @@ jobs:
       PYTHONPATH: ${{ github.workspace }}
     strategy:
       matrix:
-        python-version: [3.11, 3.12]
+        python-version: [3.12, 3.13]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,6 +39,6 @@ jobs:
           # Verify installed package
           python -m pip show ai_project_manager_root || true
 
-      - name: Run tests
+      - name: Run unit tests
         run: |
           pytest -q
