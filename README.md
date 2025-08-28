@@ -1,6 +1,9 @@
+
 # AI Project Manager
 
 [![CI](https://github.com/zaydor/ai-project-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/zaydor/ai-project-manager/actions/workflows/ci.yml)
+[![Lint](https://github.com/zaydor/ai-project-manager/actions/workflows/lint.yml/badge.svg)](https://github.com/zaydor/ai-project-manager/actions/workflows/lint.yml)
+[![Docker Build](https://github.com/zaydor/ai-project-manager/actions/workflows/docker-build.yml/badge.svg)](https://github.com/zaydor/ai-project-manager/actions/workflows/docker-build.yml)
 
 This repo contains a local-only Flask backend that uses Ollama for LLM-powered project intake, planning, and scheduling. The backend is in `backend/` and has dry-run-safe connectors for Todoist and Google Calendar.
 
