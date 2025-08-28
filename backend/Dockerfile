@@ -1,10 +1,11 @@
-FROM python:3.11-slim
+FROM python:3.13-slim
 
 # Install uv (fast Python package installer)
 RUN pip install --no-cache-dir uv
 WORKDIR /app
 
 COPY pyproject.toml README.md ./
+COPY uv.lock ./
 RUN uv sync --frozen --no-cache
 
 COPY . .
