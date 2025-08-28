@@ -1,0 +1,84 @@
+name: Lint & Docker Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    name: Lint (Python & JS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install ruff
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+
+      - name: Run ruff (Python lint)
+        run: |
+          ruff check .
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: JS lint if package.json exists
+        run: |
+          if [ -f package.json ]; then
+            npm ci --prefer-offline --no-audit --progress=false || npm install
+            # run eslint if configured in package.json
+            if npx --no-install eslint --version 2>/dev/null; then
+              npx eslint . || true
+            else
+              echo "eslint not configured or not installed; skipping JS lint"
+            fi
+          else
+            echo "No package.json found — skipping JS lint"
+          fi
+
+  docker-build:
+    name: Build Docker image (backend)
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend Docker image
+        working-directory: ./backend
+        run: |
+          docker build -t ai-project-manager-backend:latest .
+          docker save ai-project-manager-backend:latest -o backend-image.tar
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-image
+          path: backend/backend-image.tar
+
+      - name: Optionally push to registry
+        if: ${{ secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != '' }}
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin ${DOCKER_REGISTRY:-docker.io}
+          IMAGE_TAG=${DOCKER_REGISTRY:-docker.io}/$DOCKER_USERNAME/ai-project-manager-backend:latest
+          docker tag ai-project-manager-backend:latest $IMAGE_TAG
+          docker push $IMAGE_TAG
