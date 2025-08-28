@@ -4,6 +4,9 @@ version = "0.1.0"
 description = "Monorepo root for AI project manager (creates a project-wide venv)."
 requires-python = ">=3.10"
 dependencies = [
+  "google-api-python-client>=2.179.0",
+  "google-auth-httplib2>=0.2.0",
+  "google-auth-oauthlib>=1.2.2",
   "requests>=2.31.0",
 ]
 
@@ -17,8 +20,13 @@ dev = [
 
 [tool.ruff]
 line-length = 88
-extend-ignore = ["E203", "W503"]
-select = ["E", "F", "W", "B", "C90"]
+lint.extend-ignore = ["E203"]
+lint.select = ["E", "F", "W", "B", "C90"]
 exclude = [".venv", "build", "dist", "backend/data.sqlite3", "**/__pycache__/**"]
 target-version = "py311"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.12.10",
+]
 

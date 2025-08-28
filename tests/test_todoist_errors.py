@@ -1,4 +1,5 @@
 import time
+
 import connectors.todoist_client as tc
 
 
@@ -23,7 +24,9 @@ def test_5xx_exhausts_retries(monkeypatch):
     monkeypatch.setattr(tc, "requests", type("R", (), {"request": always_500}))
     monkeypatch.setattr(time, "sleep", lambda s: None)
 
-    ok, resp = tc._request_with_retry("POST", tc.TODOIST_TASKS_URL, headers={}, json_payload={})
+    ok, resp = tc._request_with_retry(
+        "POST", tc.TODOIST_TASKS_URL, headers={}, json_payload={}
+    )
     assert ok is False
     assert isinstance(resp, dict) and resp.get("error") == "max_retries_exceeded"
 
@@ -34,7 +37,9 @@ def test_malformed_json_returns_none(monkeypatch):
 
     monkeypatch.setattr(tc, "requests", type("R", (), {"request": resp_bad_json}))
 
-    ok, resp = tc._request_with_retry("GET", tc.TODOIST_TASKS_URL, headers={}, json_payload=None)
+    ok, resp = tc._request_with_retry(
+        "GET", tc.TODOIST_TASKS_URL, headers={}, json_payload=None
+    )
     assert ok is True
     assert resp is None
 
@@ -45,6 +50,8 @@ def test_status_204_returns_true_none(monkeypatch):
 
     monkeypatch.setattr(tc, "requests", type("R", (), {"request": resp_204}))
 
-    ok, resp = tc._request_with_retry("DELETE", tc.TODOIST_TASKS_URL + "/1", headers={}, json_payload=None)
+    ok, resp = tc._request_with_retry(
+        "DELETE", tc.TODOIST_TASKS_URL + "/1", headers={}, json_payload=None
+    )
     assert ok is True
     assert resp is None

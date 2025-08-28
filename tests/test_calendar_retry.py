@@ -1,5 +1,6 @@
-import connectors.calendar_client as cc
 import time
+
+import connectors.calendar_client as cc
 
 
 class FakeHttpError(Exception):

@@ -4,6 +4,7 @@ import json
 import logging
 import os
 from typing import List
+
 import httpx
 
 logger = logging.getLogger(__name__)
@@ -58,11 +59,13 @@ class OllamaClient:
         return questions
 
     def draft_plan(self, summary: str, answers: dict) -> dict:
-        system = "You are a helpful project planner. Provide JSON with milestones and tasks."  # simple
+        system = (
+            "You are a helpful project planner. Provide JSON with milestones and tasks."  # simple
+        )
         # Provide a very constrained instruction hoping for JSON-like output.
         prompt = (
-            "SUMMARY:"\
-            f" {summary}\nANSWERS: {json.dumps(answers)}\n"\
+            "SUMMARY:"
+            f" {summary}\nANSWERS: {json.dumps(answers)}\n"
             "Return JSON with keys milestones (list of names) and tasks (list of {name, milestone, estimate_hours})."
         )
         raw = self.generate(prompt, system=system)

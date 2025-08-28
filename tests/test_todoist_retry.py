@@ -29,7 +29,9 @@ def test_request_with_retry_handles_429_then_success(monkeypatch):
     monkeypatch.setattr(tc, "requests", type("R", (), {"request": fake_request}))
     monkeypatch.setattr(time, "sleep", lambda s: None)
 
-    ok, resp = tc._request_with_retry("POST", tc.TODOIST_TASKS_URL, headers={"x": "y"}, json_payload={})
+    ok, resp = tc._request_with_retry(
+        "POST", tc.TODOIST_TASKS_URL, headers={"x": "y"}, json_payload={}
+    )
     assert ok is True
     assert resp == {"id": 123}
 
@@ -47,6 +49,8 @@ def test_request_with_retry_handles_exceptions_then_success(monkeypatch):
     monkeypatch.setattr(tc, "requests", type("R", (), {"request": fake_request}))
     monkeypatch.setattr(time, "sleep", lambda s: None)
 
-    ok, resp = tc._request_with_retry("POST", tc.TODOIST_TASKS_URL, headers={}, json_payload={})
+    ok, resp = tc._request_with_retry(
+        "POST", tc.TODOIST_TASKS_URL, headers={}, json_payload={}
+    )
     assert ok is True
     assert resp == {"ok": True}

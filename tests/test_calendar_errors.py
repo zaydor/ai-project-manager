@@ -1,9 +1,11 @@
-import connectors.calendar_client as cc
 import time
+
+import connectors.calendar_client as cc
 
 
 def test_apply_create_events_max_retries(monkeypatch):
-    # Simulate build returning a service whose events().insert().execute() always raises HttpError
+    # Simulate build returning a service whose events().insert().execute()
+    # always raises HttpError
     class AlwaysFailEvents:
         def insert(self, calendarId, body):
             class Inserter:

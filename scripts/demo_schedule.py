@@ -5,14 +5,16 @@ Usage:
 
 If tasks.json is omitted, a sample set is used.
 """
+
 import json
 import sys
+
 from agent_controller.scheduler import create_schedule
 
 
 def main():
     if len(sys.argv) > 1:
-        with open(sys.argv[1], 'r') as fh:
+        with open(sys.argv[1], "r") as fh:
             tasks = json.load(fh)
     else:
         tasks = [
@@ -24,5 +26,5 @@ def main():
     print(json.dumps(sched, indent=2))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

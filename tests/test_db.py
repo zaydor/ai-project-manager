@@ -14,7 +14,17 @@ def test_init_and_crud(tmp_path, monkeypatch):
     mids = db.insert_milestones(pid, [{"name": "M1", "target_date": "2025-01-01"}])
     assert len(mids) == 1
 
-    tids = db.insert_tasks(pid, [{"milestone_id": mids[0], "name": "T1", "estimate_hours": 1.5, "dependencies": []}])
+    tids = db.insert_tasks(
+        pid,
+        [
+            {
+                "milestone_id": mids[0],
+                "name": "T1",
+                "estimate_hours": 1.5,
+                "dependencies": [],
+            }
+        ],
+    )
     assert len(tids) == 1
 
     proj = db.fetch_project(pid)

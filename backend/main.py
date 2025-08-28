@@ -2,26 +2,26 @@ from __future__ import annotations
 
 import logging
 import os
+
 from flask import Flask, jsonify, request
 from werkzeug.exceptions import HTTPException
 
+import db
 from models import (
-    IntakeRequest,
-    IntakeResponse,
-    PlanRequest,
-    PlanResponse,
-    SchedulePreviewRequest,
-    SchedulePreviewResponse,
     ApplyRequest,
     ApplyResponse,
     ErrorResponse,
-    TaskModel,
+    IntakeRequest,
+    IntakeResponse,
     MilestoneModel,
+    PlanRequest,
+    PlanResponse,
     ScheduledTask,
+    SchedulePreviewRequest,
+    SchedulePreviewResponse,
+    TaskModel,
 )
-import db
 from ollama_client import OllamaClient
-
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s %(levelname)s %(name)s - %(message)s")
@@ -79,9 +79,7 @@ def project_plan():
         if isinstance(m_name, str)
     ]
     milestone_ids = db.insert_milestones(payload.project_id, milestones)
-    milestone_map = {
-        name: mid for name, mid in zip([m["name"] for m in milestones], milestone_ids)
-    }
+    milestone_map = {name: mid for name, mid in zip([m["name"] for m in milestones], milestone_ids)}
 
     validated_tasks: list[TaskModel] = []
     db_ready_tasks = []
@@ -163,7 +161,9 @@ def schedule_preview():
     return jsonify(resp.dict())
 
 
-def perform_external_writes(tasks: list[TaskModel], do_todoist: bool, do_calendar: bool) -> list[str]:
+def perform_external_writes(
+    tasks: list[TaskModel], do_todoist: bool, do_calendar: bool
+) -> list[str]:
     actions: list[str] = []
     if do_todoist:
         # TODO: integrate real Todoist API using TODOIST_API_TOKEN

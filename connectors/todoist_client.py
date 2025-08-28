@@ -10,22 +10,33 @@ Functions:
 - undo_created(token, created_ids) -> list of deletion results
 
 Notes:
-- This module never writes anywhere unless `apply_create` is called with `dry_run=False` and a valid token.
+- This module never writes anywhere unless `apply_create` is called with `dry_run=False`
+  and a valid token.
 - All network calls use the REST v2 API (https://developer.todoist.com/rest/v2/).
 
 Example usage:
 
->>> payloads = create_todoist_payloads([{"task_id":1, "start_ts":"2025-01-01T09:00:00Z", "end_ts":"2025-01-01T10:00:00Z", "title":"Do X"}])
+>>> payloads = create_todoist_payloads([
+...     {
+...         "task_id": 1,
+...         "start_ts": "2025-01-01T09:00:00Z",
+...         "end_ts": "2025-01-01T10:00:00Z",
+...         "title": "Do X"
+...     }
+... ])
 >>> summary = dry_run_create(payloads)
->>> created = apply_create("TODOIST_TOKEN", payloads, dry_run=True)  # dry-run, will not call API
+>>> created = apply_create(
+...     "TODOIST_TOKEN", payloads, dry_run=True
+... )  # dry-run, will not call API
 >>> created = apply_create("TODOIST_TOKEN", payloads, dry_run=False)  # actually create
 >>> undo_created("TODOIST_TOKEN", created)
 """
+
 from __future__ import annotations
 
 import logging
-import time
 import random
+import time
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import requests
@@ -51,7 +62,11 @@ def create_todoist_payloads(schedule: Iterable[Dict[str, Any]]) -> List[Dict[str
     """
     out: List[Dict[str, Any]] = []
     for item in schedule:
-        title = item.get("title") or item.get("content") or f"Task {item.get('task_id') or ''}".strip()
+        title = (
+            item.get("title")
+            or item.get("content")
+            or f"Task {item.get('task_id') or ''}".strip()
+        )
         desc = item.get("description") or item.get("notes")
         start = item.get("start_ts")
         due = None
@@ -87,7 +102,14 @@ def dry_run_create(payloads: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
     return summary
 
 
-def _request_with_retry(method: str, url: str, headers: Dict[str, str], json_payload: Optional[Dict[str, Any]] = None, max_retries: int = 5, backoff_base: float = 0.5) -> Tuple[bool, Optional[Dict[str, Any]]]:
+def _request_with_retry(
+    method: str,
+    url: str,
+    headers: Dict[str, str],
+    json_payload: Optional[Dict[str, Any]] = None,
+    max_retries: int = 5,
+    backoff_base: float = 0.5,
+) -> Tuple[bool, Optional[Dict[str, Any]]]:
     """Internal helper: perform HTTP request with retry/backoff and rate-limit handling.
 
     Returns (success, response_json_or_none).
@@ -95,12 +117,14 @@ def _request_with_retry(method: str, url: str, headers: Dict[str, str], json_pay
     attempt = 0
     while attempt < max_retries:
         try:
-            resp = requests.request(method, url, headers=headers, json=json_payload, timeout=15)
+            resp = requests.request(
+                method, url, headers=headers, json=json_payload, timeout=15
+            )
         except Exception as e:
             logger.warning("HTTP request exception (attempt %s): %s", attempt + 1, e)
             # transient network error -> retry
             attempt += 1
-            sleep_for = backoff_base * (2 ** attempt) + random.random() * 0.1
+            sleep_for = backoff_base * (2**attempt) + random.random() * 0.1
             time.sleep(sleep_for)
             continue
 
@@ -115,18 +139,28 @@ def _request_with_retry(method: str, url: str, headers: Dict[str, str], json_pay
             # Rate limited. Check Retry-After
             retry_after = resp.headers.get("Retry-After")
             try:
-                wait = float(retry_after) if retry_after else (backoff_base * (2 ** attempt))
+                wait = (
+                    float(retry_after) if retry_after else (backoff_base * (2**attempt))
+                )
             except Exception:
-                wait = backoff_base * (2 ** attempt)
-            logger.warning("Rate limited by Todoist (429). Sleeping for %s seconds (attempt %s)", wait, attempt + 1)
+                wait = backoff_base * (2**attempt)
+            logger.warning(
+                "Rate limited by Todoist (429). Sleeping for %s seconds (attempt %s)",
+                wait,
+                attempt + 1,
+            )
             time.sleep(wait)
             attempt += 1
             continue
         elif 500 <= resp.status_code < 600:
             # server error, retry
-            logger.warning("Server error %s from Todoist, attempt %s", resp.status_code, attempt + 1)
+            logger.warning(
+                "Server error %s from Todoist, attempt %s",
+                resp.status_code,
+                attempt + 1,
+            )
             attempt += 1
-            time.sleep(backoff_base * (2 ** attempt) + random.random() * 0.1)
+            time.sleep(backoff_base * (2**attempt) + random.random() * 0.1)
             continue
         else:
             # client error - do not retry
@@ -139,11 +173,14 @@ def _request_with_retry(method: str, url: str, headers: Dict[str, str], json_pay
     return False, {"error": "max_retries_exceeded"}
 
 
-def apply_create(token: str, payloads: Iterable[Dict[str, Any]], dry_run: bool = True) -> List[Dict[str, Any]]:
+def apply_create(
+    token: str, payloads: Iterable[Dict[str, Any]], dry_run: bool = True
+) -> List[Dict[str, Any]]:
     """Create tasks in Todoist from prepared payloads.
 
-    By default (dry_run=True) this function will NOT call the Todoist API and will instead
-    return a summary of what would be created. To execute writes, pass dry_run=False and a valid token.
+    By default (dry_run=True) this function will NOT call the Todoist API and will
+    instead return a summary of what would be created. To execute writes, pass
+    dry_run=False and a valid token.
 
     Returns a list of dicts for each payload with keys:
       - success (bool)
@@ -166,7 +203,9 @@ def apply_create(token: str, payloads: Iterable[Dict[str, Any]], dry_run: bool =
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     results: List[Dict[str, Any]] = []
     for p in pl:
-        ok, resp = _request_with_retry("POST", TODOIST_TASKS_URL, headers, json_payload=p)
+        ok, resp = _request_with_retry(
+            "POST", TODOIST_TASKS_URL, headers, json_payload=p
+        )
         if ok:
             results.append({"success": True, "response": resp, "payload": p})
         else:
@@ -174,10 +213,13 @@ def apply_create(token: str, payloads: Iterable[Dict[str, Any]], dry_run: bool =
     return results
 
 
-def undo_created(token: str, created_results: Iterable[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def undo_created(
+    token: str, created_results: Iterable[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
     """Delete tasks that were created.
 
-    Accepts an iterable of created result dicts as returned by `apply_create` (successful entries must contain `response` with an `id`).
+    Accepts an iterable of created result dicts as returned by `apply_create`
+    (successful entries must contain `response` with an `id`).
     Returns a list of deletion results: {id, success, response_or_error}.
 
     This function will attempt to delete items with retries and log failures.
@@ -188,10 +230,11 @@ def undo_created(token: str, created_results: Iterable[Dict[str, Any]]) -> List[
         resp = r.get("response") or {}
         task_id = resp.get("id") if isinstance(resp, dict) else None
         if not task_id:
-            out.append({"id": None, "success": False, "error": "no id in response", "orig": r})
+            out.append(
+                {"id": None, "success": False, "error": "no id in response", "orig": r}
+            )
             continue
         url = f"{TODOIST_TASKS_URL}/{task_id}"
         ok, del_resp = _request_with_retry("DELETE", url, headers, json_payload=None)
         out.append({"id": task_id, "success": ok, "response": del_resp})
     return out
-
