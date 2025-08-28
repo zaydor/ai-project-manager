@@ -90,12 +90,15 @@ jobs:
           path: backend/backend-image.tar
 
       - name: Optionally push to registry
-        if: ${{ secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != '' }}
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
         run: |
+          if [ -z "$DOCKER_USERNAME" ] || [ -z "$DOCKER_PASSWORD" ]; then
+            echo "DOCKER credentials not set; skipping push"
+            exit 0
+          fi
           echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin ${DOCKER_REGISTRY:-docker.io}
           IMAGE_TAG=${DOCKER_REGISTRY:-docker.io}/$DOCKER_USERNAME/ai-project-manager-backend:latest
           docker tag ai-project-manager-backend:latest $IMAGE_TAG
