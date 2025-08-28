@@ -1,4 +1,5 @@
 import time
+from unittest.mock import Mock
 
 import connectors.calendar_client as cc
 
@@ -19,7 +20,7 @@ def test_request_with_retry_success_after_http_error(monkeypatch):
                     # toggle state
                     if not hasattr(FakeEvents, "called"):
                         FakeEvents.called = True
-                        raise cc.HttpError("fake http error")
+                        raise cc.HttpError(Mock(), b"fake http error")
                     return {"id": "evt123"}
 
             return Inserter(self)
