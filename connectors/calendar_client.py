@@ -15,7 +15,7 @@ from __future__ import annotations
 import logging
 import time
 import random
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,6 @@ def _request_with_retry(func, *args, max_retries: int = 5, backoff_base: float =
         try:
             return True, func(*args, **kwargs)
         except HttpError as e:
-            status = getattr(e, "status_code", None) or getattr(e, "resp", None)
             logger.warning("Calendar API HttpError (attempt %s): %s", attempt + 1, e)
             # naive backoff
             time.sleep(backoff_base * (2 ** attempt) + random.random() * 0.1)

@@ -21,7 +21,7 @@ All outputs are deterministic for a given input.
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List
 
 
 def _to_minutes(task: Dict[str, Any]) -> int:
@@ -79,7 +79,6 @@ def create_schedule(
 
     # Greedy place each task into the day with smallest current load that still fits.
     for item in converted:
-        placed = False
         candidate_day_idx = None
         # Consider days in increasing load order deterministically
         order = sorted(range(len(days)), key=lambda i: (days[i]["load"], i))

@@ -1,4 +1,3 @@
-import types
 import connectors.calendar_client as cc
 import time
 

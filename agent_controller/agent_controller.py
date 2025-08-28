@@ -29,7 +29,8 @@ import logging
 import sqlite3
 from datetime import datetime, timedelta
 from hashlib import sha256
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
+import importlib.util
 
 # Local project imports
 try:
@@ -65,23 +66,9 @@ SAMPLE_PROMPT_SCORE_ESTIMATE = (
 )
 
 # Embedding / vector index helpers. Try faiss/chroma if available; otherwise use deterministic hashing fallback.
-try:  # pragma: no cover - optional dependencies
-    import faiss  # type: ignore
-    _HAS_FAISS = True
-except Exception:  # noqa: E722
-    _HAS_FAISS = False
-
-try:  # pragma: no cover - optional dependencies
-    import chromadb  # type: ignore
-    _HAS_CHROMA = True
-except Exception:  # noqa: E722
-    _HAS_CHROMA = False
-
-try:  # optional embedding model
-    from sentence_transformers import SentenceTransformer  # type: ignore
-    _HAS_SBT = True
-except Exception:  # noqa: E722
-    _HAS_SBT = False
+_HAS_FAISS = importlib.util.find_spec("faiss") is not None
+_HAS_CHROMA = importlib.util.find_spec("chromadb") is not None
+_HAS_SBT = importlib.util.find_spec("sentence_transformers") is not None
 
 
 class SimpleEmbeddingIndex:
@@ -100,8 +87,10 @@ class SimpleEmbeddingIndex:
 
         # If sentence-transformers available, use it for higher-quality embeddings
         if _HAS_SBT:
-            # note: model load may be slow; kept optional
+            # note: model load may be slow; kept optional. Import lazily to avoid top-level import.
             try:
+                from sentence_transformers import SentenceTransformer  # type: ignore
+
                 self._embedder = SentenceTransformer("all-MiniLM-L6-v2")
             except Exception:
                 self._embedder = None
