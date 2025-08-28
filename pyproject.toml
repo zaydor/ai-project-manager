@@ -20,5 +20,5 @@ line-length = 88
 extend-ignore = ["E203", "W503"]
 select = ["E", "F", "W", "B", "C90"]
 exclude = [".venv", "build", "dist", "backend/data.sqlite3", "**/__pycache__/**"]
-target-version = ["py311", "py312"]
+target-version = "py311"
 
