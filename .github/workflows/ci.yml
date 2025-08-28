@@ -2,13 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: ['main', 'master']
   pull_request:
-    branches: [ "main", "master" ]
+    branches: ['main', 'master']
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}
     strategy:
       matrix:
         python-version: [3.11, 3.12]
@@ -32,7 +34,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest requests
+          # Install project package (editable) and dev extras so local packages are importable
+          pip install -e '.[dev]'
+          # Verify installed package
+          python -m pip show ai_project_manager_root || true
 
       - name: Run tests
         run: |
