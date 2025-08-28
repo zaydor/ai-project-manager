@@ -1,0 +1,16 @@
+[project]
+name = "ai_project_manager_root"
+version = "0.1.0"
+description = "Monorepo root for AI project manager (creates a project-wide venv)."
+requires-python = ">=3.10"
+dependencies = [
+  "requests>=2.31.0",
+]
+
+[tool.setuptools]
+packages = ["backend", "connectors", "agent_controller", "helpers"]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+]

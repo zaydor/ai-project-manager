@@ -1,0 +1,29 @@
+[project]
+name = "ai-project-manager-backend"
+version = "0.1.0"
+description = "Local-only agent API backend (Flask) backed by Ollama for AI Project Manager subcomponent"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Your Name", email = "dev@example.com"}]
+dependencies = [
+  "flask>=3.0.0",
+  "pydantic>=2.7.0",
+  "httpx>=0.27.0",
+  "python-dotenv>=1.0.0"
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ai_project_manager_backend"]
+

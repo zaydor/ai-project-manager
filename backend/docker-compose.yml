@@ -1,0 +1,25 @@
+version: '3.9'
+services:
+  backend:
+    build: .
+    environment:
+      - HOST=0.0.0.0
+      - PORT=5000
+      - LOG_LEVEL=INFO
+      - AGENT_MODEL=mistral:7b
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - ollama
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./data:/app
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - '11434:11434'
+    volumes:
+      - ollama_models:/root/.ollama
+    restart: unless-stopped
+volumes:
+  ollama_models: {}
